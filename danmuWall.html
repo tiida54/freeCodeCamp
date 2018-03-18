@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous">
+  <!-- googleapis 外嵌字體 -->
+  <link href='https://fonts.googleapis.com/css?family=Amatic+SC:400,700' rel='stylesheet' type='text/css'>
+
+  <title> freeCodeCamp | danmuWall | BulbCat</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    .danmuShow {
+      position: relative;
+      margin-top: 20px;
+      height: 400px;
+      margin-left: 20px;
+      margin-right: 20px;
+      border: 1px #ccc solid;
+      font-size: 30px;
+      overflow: hidden;
+    }
+
+    .submit {
+      margin-top: 20px;
+    }
+
+    #comments {
+      font-size: 1.5em;
+      width: 500px;
+    }
+
+    #submit {
+      font-size: 1.5em;
+      background: #f1c943;
+    }
+
+    #change {
+      font-size: 1.5em;
+      background: #ff5231;
+    }
+
+    #clean {
+      font-size: 1.5em;
+      background: #ff2200;
+    }
+  </style>
+</head>
+
+<body>
+  <center>
+    <h1>Danmu Wall</h1>
+  </center>
+  <div class="danmuShow">
+
+  </div>
+
+  <div class="submit">
+    <center>
+      <input id="comments" type="text" name="comments" placeholder="輸入文字">
+      <button id="submit">輸出彈幕</button>
+      <button id="change">關閉彈幕</button>
+      <button id="clean">清除彈幕</button>
+    </center>
+  </div>
+
+
+  <!-- Optional JavaScript -->
+
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script>
+    var arr = []; //保存彈幕
+    var start = true; //彈幕開關
+    $(document).ready(function () {
+      // 存取彈幕螢幕寬高
+      var showscreen = $(".danmuShow");
+      var showHeight = showscreen.height();
+      var showWidth = showscreen.width();
+
+      // 發射彈幕
+      $("#submit").click(function () {
+        var damutext = $("#comments").val(); //讀取文字
+        $("#comments").val(""); //清空區域
+        arr.push(damutext); //存取文字
+
+        var textObj = $("<div>" + damutext + "</div>");
+        showscreen.append(textObj);
+        console.log("textObj:" + textObj.html());
+        moveObj(textObj);
+
+        if (start == false) {
+          start = true;
+          $("#change").html("關閉彈幕");
+          runDanMu(); //開啟弹幕
+        }
+      });
+
+      // 鍵盤觸發發射彈幕
+      $("#comments").keypress(function (event) {
+        if (event.keyCode == "13") {
+          $("#submit").trigger('click');
+        }
+      });
+
+      // 關閉彈幕
+      $("#change").click(function () {
+        if (start == true) {
+          start = false;
+          $("#change").html("開啟弹幕");
+          showscreen.empty();
+        } else if (start == false) {
+          start = true;
+          $("#change").html("關閉弹幕");
+          runDanMu();
+        }
+      });
+
+      // 清除彈幕
+      $("#clean").click(function () {
+        arr.length = 0;
+        showscreen.empty();
+      });
+
+      var topMin = showscreen.offset().top;
+      var topMax = topMin + showHeight;
+      var top = topMin;
+
+      // 移動彈幕
+      var moveObj = function (obj) {
+        obj.css({
+          display: "inline",
+          position: "absolute"
+        });
+        var begin = showscreen.width() - obj.width(); //取得起點
+        top += 50;
+        if (top > topMax - 50) {
+          top = topMin;
+        }
+        obj.css({
+          left: begin,
+          top: top,
+          color: getRandomColor()
+        });
+        var time = 20000 + 10000 * Math.random();
+        obj.animate({
+          left: "-" + begin + "px"
+        }, time, function () {
+          obj.remove();
+        });
+      }
+
+      // 隨機色彩
+      var getRandomColor = function () {
+        return '#' + ('00000' + (Math.random() * 0xffffff << 0).toString(16)).substr(-6);
+      }
+
+      //開啟彈幕
+      var runDanMu = function () {
+        if (start == true) {
+          if (arr.length > 0) {
+            var n = Math.floor(Math.random() * arr.length + 1) - 1;
+            var textObj = $("<div>" + arr[n] + "</div>");
+            showscreen.append(textObj);
+            moveObj(textObj);
+          }
+        }
+        setTimeout(runDanMu, 3000);
+      }
+
+      jQuery.fx.interval = 50; //調整動畫運行的每秒幀數
+      runDanMu();
+
+    });
+  </script>
+
+</body>
+
+</html>
